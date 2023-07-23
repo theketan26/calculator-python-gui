@@ -9,7 +9,15 @@ master_label = ctk.CTkLabel(master=root, text="CALCULATOR")
 master_label.grid(row=0, column=0, columnspan=2)
 
 
-equation, result, operation = tkinter.StringVar(), tkinter.StringVar(), tkinter.StringVar()
+equation, result = tkinter.StringVar(), tkinter.StringVar()
+
+
+def set_val(val, fun='eq'):
+    if fun == 'res':
+        result.set(val)
+    else:
+        equation.set(val)
+        equate()
 
 
 def set_equation(x):
@@ -18,39 +26,102 @@ def set_equation(x):
         if '.' in pre_eq:
             return
         if pre_eq == '':
-            equation.set('0' + x)
+            set_val('0' + x)
             return
     elif x == '0' and (pre_eq == ''):
         return
-    equation.set(pre_eq + x)
+    set_val(pre_eq + x)
 
 
 def remove_equation(clear=False):
     pre_eq = equation.get()
     if clear:
-        equation.set('')
+        set_val('')
     elif pre_eq != '':
-        equation.set(pre_eq[:-1])
+        set_val(pre_eq[:-1])
 
 
 def add_operator(x):
     pre_eq = equation.get()
     if pre_eq != '':
-        if result.get() != '':
-            equate()
-        operation.set(x)
-        result.set(pre_eq)
-        equation.set('')
+        if not pre_eq[-1].isdigit():
+            if pre_eq[-1] == '=':
+                equate()
+            return
+        set_val(pre_eq + x)
+
+
+def equate_lst(lst):
+    leng = len(lst)
+    ops = ['/', '*', '+', '-', '%', '^']
+    for op in ops:
+        i = 0
+        while i < leng - 1:
+            j = i
+            if lst[i] == '(':
+                while j < len(lst):
+                    if i == ')':
+                        break
+                    j += 1
+                equate_lst(lst[i + 1:j - 1])
+            elif lst[i] in ops:
+                # print(lst)
+                # print(i, op, lst[i - 1], lst[i], lst[i + 1])
+                if lst[i] == op == '/':
+                    lst[i] = lst[i - 1] / lst[i + 1]
+                    i -= 1
+                elif lst[i] == op == '*':
+                    lst[i] = lst[i - 1] * lst[i + 1]
+                    i -= 1
+                elif lst[i] == op == '+':
+                    lst[i] = lst[i - 1] + lst[i + 1]
+                    i -= 1
+                elif lst[i] == op == '-':
+                    lst[i] = lst[i - 1] - lst[i + 1]
+                    i -= 1
+                elif lst[i] == op == '%':
+                    lst[i] = lst[i - 1] % lst[i + 1]
+                    i -= 1
+                else:
+                    i += 1
+                    continue
+                print(i, lst)
+                lst.pop(i + 2)
+                lst.pop(i)
+                leng -= 2
+            i += 1
+    if len(lst) == 1:
+        return lst[0]
+    else:
+        print(lst)
+        return equate_lst(lst)
 
 
 def equate():
-    if operation == '+':
-        result.set(str(float(equation.get()) + float(result.get())))
+    print('start equating')
+    pre_eq = equation.get()
+    lsts = [0]
+    i = 0
+    while i < len(pre_eq):
+        if pre_eq[i].isdigit():
+            lst_num = lsts[-1]
+            if type(lst_num) == (int or float):
+                if lst_num != 0:
+                    lst_num *= 10
+                lst_num += int(pre_eq[i])
+                lsts[-1] = lst_num
+        else:
+            lsts.append(pre_eq[i])
+            lsts.append(0)
+        i += 1
+    res = equate_lst(lsts)
+    if res:
+        set_val(res, 'res')
 
 
 equation_entry = ctk.CTkEntry(master=root, textvariable=equation)
 result_label = ctk.CTkLabel(master=root, textvariable=result)
-operation_label = ctk.CTkLabel(master=root, textvariable=operation)
+operation_label = ctk.CTkLabel(master=root, text='=')
 equation_entry.grid(row=1, column=0, columnspan=2, padx=2)
 operation_label.grid(row=2, column=0, padx=2)
 result_label.grid(row=2, column=1, padx=2)
@@ -88,16 +159,16 @@ number_buttons["0"].grid(row=3, column=1, columnspan=2, padx=2, pady=1)
 operator_frame = ctk.CTkFrame(master=root)
 operator_buttons = {
     "+": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("+"), text="+", width=50, height=25),
-    "-": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("_"), text="-", width=50, height=25),
+    "-": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("-"), text="-", width=50, height=25),
     "^": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("^"), text="^", width=50, height=25),
     "*": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("*"), text="*", width=50, height=25),
     "/": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("/"), text="/", width=50, height=25),
     "eq": ctk.CTkButton(master=operator_frame, text="eq", width=50, height=25),
     "%": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("%"), text="%", width=50, height=25),
     "√": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("√"), text="√", width=50, height=25),
-    "=": ctk.CTkButton(master=operator_frame, text="=", width=104, height=25),
+    "=": ctk.CTkButton(master=operator_frame, command=lambda: equate(), text="=", width=104, height=25),
     "↼": ctk.CTkButton(master=operator_frame, command=lambda: remove_equation(), text="↼", width=50, height=25),
-    "c": ctk.CTkButton(master=operator_frame, text="c", width=50, height=25),
+    "c": ctk.CTkButton(master=operator_frame, command=lambda: remove_equation(clear=True), text="c", width=50, height=25),
 }
 
 operator_frame.grid(row=3, column=1)
