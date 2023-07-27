@@ -105,7 +105,10 @@ def equate_lst(lst):
         return equate_lst(lst)
 
 
-def equate():
+def equate(x=False):
+    if x:
+        set_val(result.get())
+        return
     print('start equating')
     pre_eq = equation.get()
     lsts = [0]
@@ -175,7 +178,7 @@ operator_buttons = {
     "/": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("/"), text="/", width=50, height=25),
     "%": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("%"), text="%", width=50, height=25),
     "√": ctk.CTkButton(master=operator_frame, command=lambda: add_operator("√"), text="√", width=50, height=25),
-    "=": ctk.CTkButton(master=operator_frame, command=lambda: equate(), text="=", width=104, height=25),
+    "=": ctk.CTkButton(master=operator_frame, command=lambda: equate(True), text="=", width=104, height=25),
     "↼": ctk.CTkButton(master=operator_frame, command=lambda: remove_equation(), text="↼", width=50, height=50),
     "c": ctk.CTkButton(master=operator_frame, command=lambda: remove_equation(clear=True), text="c", width=50, height=25),
 }
